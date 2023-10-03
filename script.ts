@@ -3,20 +3,16 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient({ log: ['query'] });
 
 async function main() {
-	await prisma.user.deleteMany();
-	const user = await prisma.user.create({
-		data: {
-			name: 'Bethel',
+	const user = await prisma.user.findUnique({
+		where: {
 			email: 'bethel@test.com',
-			age: 21,
+		},
+		include: {
 			userPreference: {
-				create: {
+				select: {
 					emailUpdates: true,
 				},
 			},
-		},
-		include: {
-			userPreference: true,
 		},
 	});
 	console.log(user);
@@ -28,3 +24,21 @@ main()
 	.finally(async () => {
 		await prisma.$disconnect();
 	});
+
+async function findUserByName(name: string) {
+	const user = await prisma.user.findFirst({
+		where: {
+			name: { equals: name },
+		},
+		include: {
+			userPreference: {
+				select: {
+					emailUpdates: true,
+				},
+			},
+		},
+	});
+	return console.log(user);
+}
+
+findUserByName('Sally');
